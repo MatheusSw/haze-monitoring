@@ -2,11 +2,11 @@
   "definitions": {},
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "title": "The schema for when a temperature needs to be registered",
+  "title": "The schema for when a humidity needs to be registered",
   "properties": {
-    "temperature": {
+    "humidity": {
       "type": "number",
-      "title": "The actual temperature value"
+      "title": "The actual humidity value"
     }
   }
 }

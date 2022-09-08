@@ -9,6 +9,9 @@ provider:
         post-temperature-create:
           name: PostTemperatureCreate
           schema: ${file(api_schema/temperature/post_temperature_create.json)}
+        post-humidity-create:
+          name: PostHumidityCreate
+          schema: ${file(api_schema/temperature/post_humidity_create.json)}
   region: sa-east-1
 
 package:
@@ -48,3 +51,33 @@ functions:
                 cluster-id: true
             schemas:
               application/json: post-temperature-create
+  humidityIndex:
+    package:
+      artifact: bin/release/net6.0/hazeMonitoring.zip
+    handler: HazeMonitoring::HazeMonitoring.handlers.HumidityHandler::Index
+    url: true
+    events:
+      - http:
+          path: clusters/{cluster-id}/humidity
+          method: get
+          request:
+            parameters:
+              querystrings:
+                total: false
+              paths:
+                cluster-id: true
+  humidityCreate:
+    package:
+      artifact: bin/release/net6.0/hazeMonitoring.zip
+    handler: HazeMonitoring::HazeMonitoring.handlers.HumidityHandler::Index
+    url: true
+    events:
+      - http:
+          path: clusters/{cluster-id}/humidity
+          method: post
+          request:
+            parameters:
+              paths:
+                cluster-id: true
+            schemas:
+              application/json: post-humidity-create
