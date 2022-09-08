@@ -25,19 +25,21 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
+            - dynamodb:DescribeTable
           Resource:
             - arn:aws:dynamodb:${opt:region, 'sa-east-1'}:*:table/${self:custom.hazeMonitoringTable}*
 package:
   individually: true
   patterns:
     - '!.idea/**'
-    - '!.github/**'
-
+    - '!.github/**' 
 functions:
   temperatureIndex:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
     handler: HazeMonitoring::HazeMonitoring.handlers.TemperatureHandler::Index
+    environment: 
+      ApplicationStage: ${opt:stage, "development"}
     url: true
     events:
       - http:
@@ -53,6 +55,8 @@ functions:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
     handler: HazeMonitoring::HazeMonitoring.handlers.TemperatureHandler::Create
+    environment:
+      ApplicationStage: ${opt:stage, "development"}
     url: true
     events:
       - http:
@@ -68,6 +72,8 @@ functions:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
     handler: HazeMonitoring::HazeMonitoring.handlers.HumidityHandler::Index
+    environment:
+      ApplicationStage: ${opt:stage, "development"}
     url: true
     events:
       - http:
@@ -82,7 +88,9 @@ functions:
   humidityCreate:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
-    handler: HazeMonitoring::HazeMonitoring.handlers.HumidityHandler::Index
+    handler: HazeMonitoring::HazeMonitoring.handlers.HumidityHandler::Create
+    environment:
+      ApplicationStage: ${opt:stage, "development"}
     url: true
     events:
       - http:
