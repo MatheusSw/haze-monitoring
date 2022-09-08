@@ -9,8 +9,8 @@
   ],
 
   "profile": "default",
-  "region": "eu-central-1",
+  "region": "sa-east-1",
   "configuration": "Release",
-  "framework": "netcoreapp3.1",
+  "framework": "net6.0",
   "template": "serverless.yml"
 }

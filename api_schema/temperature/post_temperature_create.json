@@ -1,0 +1,12 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "The schema for when a temperature needs to be created",
+  "properties": {
+    "temperature": {
+      "type": "number",
+      "title": "The actual temperature value"
+    }
+  }
+}
