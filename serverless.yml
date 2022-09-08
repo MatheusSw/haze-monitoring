@@ -1,5 +1,6 @@
 service: HazeMonitoring
-
+custom:
+  hazeMonitoringTable: haze-monitoring-${opt:stage, "development"}-table
 provider:
   name: aws
   runtime: dotnet6
@@ -13,6 +14,19 @@ provider:
           name: PostHumidityCreate
           schema: ${file(api_schema/temperature/post_humidity_create.json)}
   region: sa-east-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - arn:aws:dynamodb:${opt:region, 'sa-east-1'}:*:table/${self:custom.hazeMonitoringTable}*
 package:
   individually: true
   patterns:
@@ -85,7 +99,7 @@ resources:
     hazeMonitoringTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: !Sub 'haze-monitoring-${opt:stage, "development"}'
+        TableName: ${self:custom.hazeMonitoringTable}
         AttributeDefinitions:
           - AttributeName: PK
             AttributeType: S
