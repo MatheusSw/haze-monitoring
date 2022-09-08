@@ -13,7 +13,6 @@ provider:
           name: PostHumidityCreate
           schema: ${file(api_schema/temperature/post_humidity_create.json)}
   region: sa-east-1
-
 package:
   individually: true
   patterns:
@@ -81,3 +80,20 @@ functions:
                 cluster-id: true
             schemas:
               application/json: post-humidity-create
+resources: 
+  Resources: 
+    hazeMonitoringTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: !Sub 'haze-monitoring-${opt:stage, "development"}'
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
