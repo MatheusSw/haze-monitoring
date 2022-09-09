@@ -20,9 +20,6 @@ namespace HazeMonitoring.handlers
         private readonly AmazonSimpleNotificationServiceClient _notificationService = new(region: Amazon.RegionEndpoint.SAEast1);
         private readonly string _snsMeasurementsTopicArn = Environment.GetEnvironmentVariable("hazeMeasurementsTopicArn");
 
-        private static readonly AmazonDynamoDBClient DynamoDbClient = new();
-        private static readonly string MonitoringTableName = $"haze-monitoring-{Utils.GetApplicationStage()}-table";
-
         public APIGatewayProxyResponse Index(APIGatewayProxyRequest request, ILambdaContext context)
         {
             var response = new APIGatewayProxyResponse

@@ -77,7 +77,7 @@ functions:
       artifact: bin/release/net6.0/hazeMonitoring.zip
     handler: HazeMonitoring::HazeMonitoring.handlers.TemperatureHandler::Create
     environment:
-      hazeMeasurementsTopicName: ${self:custom.hazeMeasurementsTopicName}
+      hazeMeasurementsTopicArn: !Ref hazeMeasurementsTopic
     url: true
     events:
       - http:
