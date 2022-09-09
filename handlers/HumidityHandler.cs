@@ -7,7 +7,6 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
-using Amazon.Runtime.Internal.Util;
 using HazeMonitoring.models;
 
 namespace HazeMonitoring.handlers;

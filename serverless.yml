@@ -4,6 +4,9 @@ custom:
 provider:
   name: aws
   runtime: dotnet6
+  logs:
+    restApi: 
+      level: INFO
   apiGateway:
     request:
       schemas:
