@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
+using Amazon.SimpleNotificationService;
+using Amazon.SimpleNotificationService.Model;
 using HazeMonitoring.models;
+// ReSharper disable PossibleInvalidOperationException
 
 namespace HazeMonitoring.handlers;
 
 public class HumidityHandler
 {
-    private static readonly AmazonDynamoDBClient DynamoDbClient = new();
-    private static readonly string MonitoringTableName = $"haze-monitoring-{Utils.GetApplicationStage()}-table";
+    private readonly AmazonSimpleNotificationServiceClient _notificationService = new(region: Amazon.RegionEndpoint.SAEast1);
+    private readonly string _snsMeasurementsTopicArn = Environment.GetEnvironmentVariable("hazeMeasurementsTopicArn");
     
     public APIGatewayProxyResponse Index(APIGatewayProxyRequest request, ILambdaContext context)
     {
@@ -29,35 +30,37 @@ public class HumidityHandler
         };
         return response;
     }
-        
-    public async Task<APIGatewayProxyResponse> Create(APIGatewayProxyRequest request, ILambdaContext context)
+
+    //todo implement correlation id logging for easier tracing
+    public async Task<APIGatewayProxyResponse> Create(APIGatewayProxyRequest gatewayRequest, ILambdaContext context)
     {
         try
         {
-            var table = Table.LoadTable(DynamoDbClient, MonitoringTableName);
-            
-            var humidityRequest = JsonSerializer.Deserialize<HumidityCreateRequest>(request.Body);
-            if (humidityRequest?.Humidity is null)
-            {
-                context.Logger.LogError("There has been a problem processing the request body");
-                return new APIGatewayProxyResponse
-                {
-                    StatusCode = (int) HttpStatusCode.BadRequest
-                };
-            }
+            _ = gatewayRequest.PathParameters.TryGetValue("cluster-id", out var clusterId);
+            var humidityRequest = JsonSerializer.Deserialize<HumidityCreateRequest>(gatewayRequest.Body);
 
-            var humidity = HumidityFactory.Make(request.PathParameters["cluster-id"], humidityRequest.Humidity.Value);
+            var measurement = MeasurementFactory.Make(clusterId, MeasurementFactory.MeasurementType.Humidity,
+                humidityRequest!.Humidity.Value);
             
-            _ = await table.PutItemAsync(humidity);
+            context.Logger.LogInformation($"Publishing request to SNS - {JsonSerializer.Serialize(measurement)}");
+            var notificationRequest = new PublishRequest
+            {
+                Message = JsonSerializer.Serialize(measurement),
+                TopicArn = _snsMeasurementsTopicArn
+            };
+
+            var notificationResponse = await _notificationService.PublishAsync(notificationRequest);
+            context.Logger.LogInformation($"Received response from SNS notification - {JsonSerializer.Serialize(notificationResponse)}");
+            
             return new APIGatewayProxyResponse
             {
                 Body = JsonSerializer.Serialize(humidityRequest),
-                StatusCode = (int) HttpStatusCode.Created
+                StatusCode = (int) HttpStatusCode.Accepted
             };
         }
         catch (Exception e)
         {
-            context.Logger.LogError($"An error ocurred while processing the request - {e.Message}");
+            context.Logger.LogError($"An error ocurred while processing the request - {e.Message} - {e.StackTrace}");
             return new APIGatewayProxyResponse
             {
                 StatusCode = (int) HttpStatusCode.InternalServerError

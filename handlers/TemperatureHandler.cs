@@ -4,17 +4,22 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
+using Amazon.SimpleNotificationService;
+using Amazon.SimpleNotificationService.Model;
 using HazeMonitoring.models;
 
 [assembly: LambdaSerializer(
-typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
+    typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
+
 namespace HazeMonitoring.handlers
 {
     public class TemperatureHandler
     {
+        private readonly AmazonSimpleNotificationServiceClient _notificationService = new(region: Amazon.RegionEndpoint.SAEast1);
+        private readonly string _snsMeasurementsTopicArn = Environment.GetEnvironmentVariable("hazeMeasurementsTopicArn");
+
         private static readonly AmazonDynamoDBClient DynamoDbClient = new();
         private static readonly string MonitoringTableName = $"haze-monitoring-{Utils.GetApplicationStage()}-table";
 
@@ -31,35 +36,36 @@ namespace HazeMonitoring.handlers
             };
             return response;
         }
-        
-        public async Task<APIGatewayProxyResponse> Create(APIGatewayProxyRequest request, ILambdaContext context)
+
+        public async Task<APIGatewayProxyResponse> Create(APIGatewayProxyRequest gatewayRequest, ILambdaContext context)
         {
             try
             {
-                var table = Table.LoadTable(DynamoDbClient, MonitoringTableName);
-            
-                var temperatureCreateRequest = JsonSerializer.Deserialize<TemperatureCreateRequest>(request.Body);
-                if (temperatureCreateRequest?.Temperature is null)
-                {
-                    context.Logger.LogError("There has been a problem processing the request body");
-                    return new APIGatewayProxyResponse
-                    {
-                        StatusCode = (int) HttpStatusCode.BadRequest
-                    };
-                }
+                _ = gatewayRequest.PathParameters.TryGetValue("cluster-id", out var clusterId);
+                var temperatureCreateRequest = JsonSerializer.Deserialize<TemperatureCreateRequest>(gatewayRequest.Body);
 
-                var temperature = TemperatureFactory.Make(request.PathParameters["cluster-id"], temperatureCreateRequest.Temperature.Value);
+                var measurement = MeasurementFactory.Make(clusterId, MeasurementFactory.MeasurementType.Temperature,
+                    temperatureCreateRequest!.Temperature.Value);
             
-                _ = await table.PutItemAsync(temperature);
+                context.Logger.LogInformation($"Publishing request to SNS - {JsonSerializer.Serialize(measurement)}");
+                var notificationRequest = new PublishRequest
+                {
+                    Message = JsonSerializer.Serialize(measurement),
+                    TopicArn = _snsMeasurementsTopicArn
+                };
+
+                var notificationResponse = await _notificationService.PublishAsync(notificationRequest);
+                context.Logger.LogInformation($"Received response from SNS notification - {JsonSerializer.Serialize(notificationResponse)}");
+            
                 return new APIGatewayProxyResponse
                 {
                     Body = JsonSerializer.Serialize(temperatureCreateRequest),
-                    StatusCode = (int) HttpStatusCode.Created
+                    StatusCode = (int) HttpStatusCode.Accepted
                 };
             }
             catch (Exception e)
             {
-                context.Logger.LogError($"An error ocurred while processing the request - {e.Message}");
+                context.Logger.LogError($"An error ocurred while processing the request - {e.Message} - {e.StackTrace}");
                 return new APIGatewayProxyResponse
                 {
                     StatusCode = (int) HttpStatusCode.InternalServerError

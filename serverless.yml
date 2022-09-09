@@ -1,6 +1,7 @@
 service: HazeMonitoring
 custom:
-  hazeMonitoringTable: haze-monitoring-${opt:stage, "development"}-table
+  hazeMonitoringTableName: haze-monitoring-${opt:stage, "development"}-table
+  hazeMeasurementsTopicName: haze-measurements-${opt:stage, "development"}-topic
 provider:
   name: aws
   runtime: dotnet6
@@ -15,7 +16,7 @@ provider:
           schema: ${file(api_schema/temperature/post_temperature_create.json)}
         post-humidity-create:
           name: PostHumidityCreate
-          schema: ${file(api_schema/temperature/post_humidity_create.json)}
+          schema: ${file(api_schema/humidity/post_humidity_create.json)}
   region: sa-east-1
   iam:
     role:
@@ -30,19 +31,36 @@ provider:
             - dynamodb:DeleteItem
             - dynamodb:DescribeTable
           Resource:
-            - arn:aws:dynamodb:${opt:region, 'sa-east-1'}:*:table/${self:custom.hazeMonitoringTable}*
+            - arn:aws:dynamodb:${opt:region, 'sa-east-1'}:*:table/${self:custom.hazeMonitoringTableName}*
+        - Effect: Allow
+          Action:
+            - sns:Publish
+          Resource:
+            - arn:aws:sns:${opt:region, 'sa-east-1'}:*:${self:custom.hazeMeasurementsTopicName}
 package:
   individually: true
   patterns:
     - '!.idea/**'
     - '!.github/**' 
+    - '!volume/**' 
+    - '!node_modules/**'
+    - 'package.json'
+    - 'package-lock.json'
 functions:
+  measurementsDispatcher:
+    package:
+      artifact: bin/release/net6.0/hazeMonitoring.zip
+    handler: HazeMonitoring::HazeMonitoring.dispatchers.MeasurementsDispatcher::Dispatch
+    environment:
+      hazeMonitoringTableName: ${self:custom.hazeMonitoringTableName}
+    events:
+      - sns:
+          arn: !Ref hazeMeasurementsTopic
+          topicName: ${self:custom.hazeMeasurementsTopicName}
   temperatureIndex:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
     handler: HazeMonitoring::HazeMonitoring.handlers.TemperatureHandler::Index
-    environment: 
-      ApplicationStage: ${opt:stage, "development"}
     url: true
     events:
       - http:
@@ -59,7 +77,7 @@ functions:
       artifact: bin/release/net6.0/hazeMonitoring.zip
     handler: HazeMonitoring::HazeMonitoring.handlers.TemperatureHandler::Create
     environment:
-      ApplicationStage: ${opt:stage, "development"}
+      hazeMeasurementsTopicName: ${self:custom.hazeMeasurementsTopicName}
     url: true
     events:
       - http:
@@ -93,7 +111,7 @@ functions:
       artifact: bin/release/net6.0/hazeMonitoring.zip
     handler: HazeMonitoring::HazeMonitoring.handlers.HumidityHandler::Create
     environment:
-      ApplicationStage: ${opt:stage, "development"}
+      hazeMeasurementsTopicArn: !Ref hazeMeasurementsTopic
     url: true
     events:
       - http:
@@ -110,7 +128,7 @@ resources:
     hazeMonitoringTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:custom.hazeMonitoringTable}
+        TableName: ${self:custom.hazeMonitoringTableName}
         AttributeDefinitions:
           - AttributeName: PK
             AttributeType: S
@@ -122,3 +140,7 @@ resources:
           - AttributeName: SK
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
+    hazeMeasurementsTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:custom.hazeMeasurementsTopicName}
