@@ -46,18 +46,13 @@ public class HumidityHandler
                     StatusCode = (int) HttpStatusCode.BadRequest
                 };
             }
+
+            var humidity = HumidityFactory.Make(request.PathParameters["cluster-id"], humidityRequest.Humidity.Value);
             
-            var humidity = new Document
-            {
-                ["PK"] = $"{request.PathParameters["cluster-id"]}",
-                ["SK"] = $"humidity-{Ulid.NewUlid().ToString()}",
-                ["Reading"] = humidityRequest.Humidity.Value
-            };
-            
-            var insertedItem = await table.PutItemAsync(humidity);
+            _ = await table.PutItemAsync(humidity);
             return new APIGatewayProxyResponse
             {
-                Body = JsonSerializer.Serialize(insertedItem),
+                Body = JsonSerializer.Serialize(humidityRequest),
                 StatusCode = (int) HttpStatusCode.Created
             };
         }
