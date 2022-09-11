@@ -10,9 +10,9 @@ using Amazon.SimpleNotificationService.Model;
 using HazeMonitoring.models;
 // ReSharper disable PossibleInvalidOperationException
 
-namespace HazeMonitoring.handlers;
+namespace HazeMonitoring.dispatchers;
 
-public class HumidityHandler
+public class HumidityDispatcher
 {
     private readonly AmazonSimpleNotificationServiceClient _notificationService = new(region: Amazon.RegionEndpoint.SAEast1);
     private readonly string _snsMeasurementsTopicArn = Environment.GetEnvironmentVariable("hazeMeasurementsTopicArn");

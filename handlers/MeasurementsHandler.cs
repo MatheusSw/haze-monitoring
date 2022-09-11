@@ -9,14 +9,14 @@ using Amazon.Lambda.Core;
 using Amazon.Lambda.SNSEvents;
 using HazeMonitoring.models;
 
-namespace HazeMonitoring.dispatchers;
+namespace HazeMonitoring.handlers;
 
-public class MeasurementsDispatcher
+public class MeasurementsHandler
 {
     private static readonly AmazonDynamoDBClient DynamoDbClient = new();
     private static readonly string MonitoringTableName = Environment.GetEnvironmentVariable("hazeMonitoringTableName");
     
-    public async Task Dispatch(
+    public async Task Handle(
         SNSEvent evnt, ILambdaContext context)
     {
         foreach (var record in evnt.Records)

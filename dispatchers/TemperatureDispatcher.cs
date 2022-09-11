@@ -13,9 +13,9 @@ using HazeMonitoring.models;
 [assembly: LambdaSerializer(
     typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
 
-namespace HazeMonitoring.handlers
+namespace HazeMonitoring.dispatchers
 {
-    public class TemperatureHandler
+    public class TemperatureDispatcher
     {
         private readonly AmazonSimpleNotificationServiceClient _notificationService = new(region: Amazon.RegionEndpoint.SAEast1);
         private readonly string _snsMeasurementsTopicArn = Environment.GetEnvironmentVariable("hazeMeasurementsTopicArn");

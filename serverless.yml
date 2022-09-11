@@ -50,7 +50,7 @@ functions:
   measurementsDispatcher:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
-    handler: HazeMonitoring::HazeMonitoring.dispatchers.MeasurementsDispatcher::Dispatch
+    handler: HazeMonitoring::HazeMonitoring.handlers.MeasurementsHandler::Handle
     environment:
       hazeMonitoringTableName: ${self:custom.hazeMonitoringTableName}
     events:
@@ -60,7 +60,7 @@ functions:
   temperatureIndex:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
-    handler: HazeMonitoring::HazeMonitoring.handlers.TemperatureHandler::Index
+    handler: HazeMonitoring::HazeMonitoring.dispatchers.TemperatureDispatcher::Index
     url: true
     events:
       - http:
@@ -75,7 +75,7 @@ functions:
   temperatureCreate:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
-    handler: HazeMonitoring::HazeMonitoring.handlers.TemperatureHandler::Create
+    handler: HazeMonitoring::HazeMonitoring.dispatchers.TemperatureDispatcher::Create
     environment:
       hazeMeasurementsTopicArn: !Ref hazeMeasurementsTopic
     url: true
@@ -92,7 +92,7 @@ functions:
   humidityIndex:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
-    handler: HazeMonitoring::HazeMonitoring.handlers.HumidityHandler::Index
+    handler: HazeMonitoring::HazeMonitoring.dispatchers.HumidityDispatcher::Index
     environment:
       ApplicationStage: ${opt:stage, "development"}
     url: true
@@ -109,7 +109,7 @@ functions:
   humidityCreate:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
-    handler: HazeMonitoring::HazeMonitoring.handlers.HumidityHandler::Create
+    handler: HazeMonitoring::HazeMonitoring.dispatchers.HumidityDispatcher::Create
     environment:
       hazeMeasurementsTopicArn: !Ref hazeMeasurementsTopic
     url: true
