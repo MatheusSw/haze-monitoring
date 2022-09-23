@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -9,27 +9,14 @@ using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
 using HazeMonitoring.models;
 // ReSharper disable PossibleInvalidOperationException
+[assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
 
 namespace HazeMonitoring.dispatchers;
 
-public class HumidityDispatcher
+public class MeasurementDispatcher
 {
     private readonly AmazonSimpleNotificationServiceClient _notificationService = new(region: Amazon.RegionEndpoint.SAEast1);
     private readonly string _snsMeasurementsTopicArn = Environment.GetEnvironmentVariable("hazeMeasurementsTopicArn");
-    
-    public APIGatewayProxyResponse Index(APIGatewayProxyRequest request, ILambdaContext context)
-    {
-        var response = new APIGatewayProxyResponse
-        {
-            StatusCode = 200,
-            Headers = new Dictionary<string, string>
-            {
-                {"Content-Type", "application/json"},
-                {"Access-Control-Allow-Origin", "*"}
-            }
-        };
-        return response;
-    }
 
     //todo implement correlation id logging for easier tracing
     public async Task<APIGatewayProxyResponse> Create(APIGatewayProxyRequest gatewayRequest, ILambdaContext context)
@@ -37,10 +24,9 @@ public class HumidityDispatcher
         try
         {
             _ = gatewayRequest.PathParameters.TryGetValue("cluster-id", out var clusterId);
-            var humidityRequest = JsonSerializer.Deserialize<HumidityCreateRequest>(gatewayRequest.Body);
+            var measurementCreateRequest = JsonSerializer.Deserialize<MeasurementCreateRequest>(gatewayRequest.Body);
 
-            var measurement = MeasurementFactory.Make(clusterId, MeasurementFactory.MeasurementType.Humidity,
-                humidityRequest!.Humidity.Value);
+            var measurement = MeasurementFactory.Make(clusterId, measurementCreateRequest);
             
             context.Logger.LogInformation($"Publishing request to SNS - {JsonSerializer.Serialize(measurement)}");
             var notificationRequest = new PublishRequest
@@ -54,7 +40,7 @@ public class HumidityDispatcher
             
             return new APIGatewayProxyResponse
             {
-                Body = JsonSerializer.Serialize(humidityRequest),
+                Body = JsonSerializer.Serialize(measurementCreateRequest),
                 StatusCode = (int) HttpStatusCode.Accepted
             };
         }

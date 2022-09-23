@@ -5,19 +5,14 @@ namespace HazeMonitoring.models;
 
 public static class MeasurementFactory
 {
-    public enum MeasurementType
-    {
-        Humidity,
-        Temperature
-    }
-    
-    public static IMeasurement Make(string clusterId, MeasurementType type, decimal measurement)
+    public static IMeasurement Make(string clusterId, MeasurementCreateRequest measurementCreateRequest)
     {
         return new Measurement
         {
-            MeasureValue = measurement,
             ClusterId = clusterId,
-            TypeTimestamp = $"{type.ToString()}-{DateTime.UtcNow.ToString("O", CultureInfo.CurrentCulture)}"
+            Reading = measurementCreateRequest.Reading,
+            Timestamp = measurementCreateRequest.Timestamp.ToString("O", CultureInfo.InvariantCulture),
+            Type = measurementCreateRequest.Type
         };
     }
 }

@@ -6,17 +6,14 @@ provider:
   name: aws
   runtime: dotnet6
   logs:
-    restApi: 
+    restApi:
       level: INFO
   apiGateway:
     request:
       schemas:
-        post-temperature-create:
-          name: PostTemperatureCreate
-          schema: ${file(api_schema/temperature/post_temperature_create.json)}
-        post-humidity-create:
-          name: PostHumidityCreate
-          schema: ${file(api_schema/humidity/post_humidity_create.json)}
+        post-measurements-create:
+          name: PostMeasurementsCreate
+          schema: ${file(api_schema/post_measurement_create.json)}
   region: sa-east-1
   iam:
     role:
@@ -41,13 +38,30 @@ package:
   individually: true
   patterns:
     - '!.idea/**'
-    - '!.github/**' 
-    - '!volume/**' 
+    - '!.github/**'
+    - '!volume/**'
     - '!node_modules/**'
     - 'package.json'
     - 'package-lock.json'
 functions:
   measurementsDispatcher:
+    package:
+      artifact: bin/release/net6.0/hazeMonitoring.zip
+    handler: HazeMonitoring::HazeMonitoring.dispatchers.MeasurementDispatcher::Create
+    environment:
+      hazeMeasurementsTopicArn: !Ref hazeMeasurementsTopic
+    url: true
+    events:
+      - http:
+          path: clusters/{cluster-id}/measurements
+          method: post
+          request:
+            parameters:
+              paths:
+                cluster-id: true
+            schemas:
+              application/json: post-measurements-create
+  measurementsHandler:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
     handler: HazeMonitoring::HazeMonitoring.handlers.MeasurementsHandler::Handle
@@ -57,74 +71,8 @@ functions:
       - sns:
           arn: !Ref hazeMeasurementsTopic
           topicName: ${self:custom.hazeMeasurementsTopicName}
-  temperatureIndex:
-    package:
-      artifact: bin/release/net6.0/hazeMonitoring.zip
-    handler: HazeMonitoring::HazeMonitoring.dispatchers.TemperatureDispatcher::Index
-    url: true
-    events:
-      - http:
-          path: clusters/{cluster-id}/temperatures
-          method: get
-          request:
-            parameters:
-              querystrings:
-                total: false
-              paths:
-                cluster-id: true
-  temperatureCreate:
-    package:
-      artifact: bin/release/net6.0/hazeMonitoring.zip
-    handler: HazeMonitoring::HazeMonitoring.dispatchers.TemperatureDispatcher::Create
-    environment:
-      hazeMeasurementsTopicArn: !Ref hazeMeasurementsTopic
-    url: true
-    events:
-      - http:
-          path: clusters/{cluster-id}/temperatures
-          method: post
-          request:
-            parameters:
-              paths:
-                cluster-id: true
-            schemas:
-              application/json: post-temperature-create
-  humidityIndex:
-    package:
-      artifact: bin/release/net6.0/hazeMonitoring.zip
-    handler: HazeMonitoring::HazeMonitoring.dispatchers.HumidityDispatcher::Index
-    environment:
-      ApplicationStage: ${opt:stage, "development"}
-    url: true
-    events:
-      - http:
-          path: clusters/{cluster-id}/humidity
-          method: get
-          request:
-            parameters:
-              querystrings:
-                total: false
-              paths:
-                cluster-id: true
-  humidityCreate:
-    package:
-      artifact: bin/release/net6.0/hazeMonitoring.zip
-    handler: HazeMonitoring::HazeMonitoring.dispatchers.HumidityDispatcher::Create
-    environment:
-      hazeMeasurementsTopicArn: !Ref hazeMeasurementsTopic
-    url: true
-    events:
-      - http:
-          path: clusters/{cluster-id}/humidity
-          method: post
-          request:
-            parameters:
-              paths:
-                cluster-id: true
-            schemas:
-              application/json: post-humidity-create
-resources: 
-  Resources: 
+resources:
+  Resources:
     hazeMonitoringTable:
       Type: AWS::DynamoDB::Table
       Properties:

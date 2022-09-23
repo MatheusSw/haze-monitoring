@@ -8,9 +8,9 @@ public static class MonitoringDocumentFactory
     {
         return new Document
         {
-            ["PK"] = measurement.ClusterId,
-            ["SK"] = measurement.TypeTimestamp,
-            ["Reading"] = measurement.MeasureValue
+            ["PK"] = ClusterDocumentFactory.GeneratePrimaryKeyFromClusterId(measurement.ClusterId),
+            ["SK"] = $"measurement-{measurement.Type}#{measurement.Timestamp}",
+            ["Measurement-reading"] = measurement.Reading
         };
     }
 }
