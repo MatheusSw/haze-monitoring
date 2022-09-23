@@ -11,7 +11,7 @@ public static class MeasurementFactory
         {
             ClusterId = clusterId,
             Reading = measurementCreateRequest.Reading,
-            Timestamp = measurementCreateRequest.Timestamp.ToString("O", CultureInfo.InvariantCulture),
+            Timestamp = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture),
             Type = measurementCreateRequest.Type
         };
     }
