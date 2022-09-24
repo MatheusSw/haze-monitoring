@@ -2,7 +2,7 @@
 using System.Globalization;
 using HazeMonitoring.models.requests;
 
-namespace HazeMonitoring.models;
+namespace HazeMonitoring.models.factory;
 
 public static class MeasurementFactory
 {

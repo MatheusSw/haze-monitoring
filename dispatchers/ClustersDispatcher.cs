@@ -9,29 +9,26 @@ using HazeMonitoring.models;
 using HazeMonitoring.models.factory;
 using HazeMonitoring.models.requests;
 
-// ReSharper disable PossibleInvalidOperationException
-
 namespace HazeMonitoring.dispatchers;
 
-public class PlantsDispatcher
+public class ClustersDispatcher
 {
     //todo implement correlation id logging for easier tracing
     public async Task<APIGatewayProxyResponse> Create(APIGatewayProxyRequest gatewayRequest, ILambdaContext context)
     {
         try
         {
-            _ = gatewayRequest.PathParameters.TryGetValue("cluster-id", out var clusterId);
-            var plantCreateRequest = JsonSerializer.Deserialize<PlantCreateRequest>(gatewayRequest.Body);
+            var clusterCreateRequest = JsonSerializer.Deserialize<ClusterCreateRequest>(gatewayRequest.Body);
 
-            context.Logger.LogInformation($"Received new plant request - {JsonSerializer.Serialize(plantCreateRequest)}");
-            var plant = PlantFactory.Make(clusterId, plantCreateRequest);
-            context.Logger.LogInformation($"Plant model created - {JsonSerializer.Serialize(plant)}");
+            context.Logger.LogInformation($"Received new cluster request - {JsonSerializer.Serialize(clusterCreateRequest)}");
+            var cluster = ClusterFactory.Make(clusterCreateRequest);
+            context.Logger.LogInformation($"Cluster model created - {JsonSerializer.Serialize(cluster)}");
 
-            await PlantsHandler.Insert(plant, context.Logger);
+            await ClustersHandler.Insert(cluster, context.Logger);
 
             return new APIGatewayProxyResponse
             {
-                Body = JsonSerializer.Serialize(plantCreateRequest),
+                Body = JsonSerializer.Serialize(clusterCreateRequest),
                 StatusCode = (int) HttpStatusCode.Accepted
             };
         }

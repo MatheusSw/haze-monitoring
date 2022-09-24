@@ -1,7 +1,7 @@
 ﻿using System;
 using HazeMonitoring.models.requests;
 
-namespace HazeMonitoring.models;
+namespace HazeMonitoring.models.factory;
 
 public static class PlantFactory
 {

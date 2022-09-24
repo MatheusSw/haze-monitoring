@@ -1,0 +1,22 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "The schema for when a cluster needs to be created",
+  "required": ["name", "location"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "The cluster name"
+    },
+    "state": {
+      "type": "string",
+      "title": "Collective state of all the plants in a cluster",
+      "enum": ["seedling", "germination", "vegetative", "flowering"]
+    },
+    "location": {
+      "type": "string",
+      "title": "Cluster location"
+    }
+  }
+}

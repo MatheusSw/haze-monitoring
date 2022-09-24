@@ -7,6 +7,7 @@ using Amazon.Lambda.Core;
 using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
 using HazeMonitoring.models;
+using HazeMonitoring.models.factory;
 using HazeMonitoring.models.requests;
 
 // ReSharper disable PossibleInvalidOperationException
