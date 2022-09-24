@@ -19,7 +19,7 @@
       "enum": ["seedling", "germination", "vegetative", "flowering"]
     },
     "cloned_from": {
-      "type": "number",
+      "type": "string",
       "title": "If the plant was cloned, it specifies the id of the plant it was cloned from"
     }
   }
