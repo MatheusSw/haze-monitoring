@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace HazeMonitoring.models;
+namespace HazeMonitoring.models.requests;
 
 public class MeasurementCreateRequest
 {

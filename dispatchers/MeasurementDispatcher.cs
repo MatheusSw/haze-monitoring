@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -8,6 +7,8 @@ using Amazon.Lambda.Core;
 using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
 using HazeMonitoring.models;
+using HazeMonitoring.models.requests;
+
 // ReSharper disable PossibleInvalidOperationException
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
 

@@ -1,6 +1,6 @@
-﻿namespace HazeMonitoring.models;
+﻿namespace HazeMonitoring.models.document_factory;
 
-public class ClusterDocumentFactory
+public static class ClusterDocumentFactory
 {
     public static string GeneratePrimaryKeyFromClusterId(string clusterId)
     {

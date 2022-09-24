@@ -14,6 +14,9 @@ provider:
         post-measurements-create:
           name: PostMeasurementsCreate
           schema: ${file(api_schema/post_measurement_create.json)}
+        post-plant-create:
+          name: PostPlantCreate
+          schema: ${file(api_schema/post_plant_create.json)}
   region: sa-east-1
   iam:
     role:
@@ -71,6 +74,23 @@ functions:
       - sns:
           arn: !Ref hazeMeasurementsTopic
           topicName: ${self:custom.hazeMeasurementsTopicName}
+  plantsDispatcher:
+    package:
+      artifact: bin/release/net6.0/hazeMonitoring.zip
+    handler: HazeMonitoring::HazeMonitoring.dispatchers.PlantsDispatcher::Create
+    environment:
+      hazeMonitoringTableName: ${self:custom.hazeMonitoringTableName}
+    url: true
+    events:
+      - http:
+          path: clusters/{cluster-id}/plants
+          method: post
+          request:
+            parameters:
+              paths:
+                cluster-id: true
+            schemas:
+              application/json: post-plant-create
 resources:
   Resources:
     hazeMonitoringTable:

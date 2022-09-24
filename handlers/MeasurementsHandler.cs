@@ -6,6 +6,7 @@ using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SNSEvents;
 using HazeMonitoring.models;
+using HazeMonitoring.models.document_factory;
 
 namespace HazeMonitoring.handlers;
 
@@ -33,7 +34,7 @@ public class MeasurementsHandler
             
             var table = Table.LoadTable(DynamoDbClient, MonitoringTableName);
 
-            var monitoringDocument = MonitoringDocumentFactory.Make(measurement);
+            var monitoringDocument = MeasurementDocumentFactory.Make(measurement);
             
             _ = await table.PutItemAsync(monitoringDocument);
         }

@@ -1,0 +1,26 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "The schema for when a plant needs to be created",
+  "required": ["strain", "lifetime", "state"],
+  "properties": {
+    "strain": {
+      "type": "string",
+      "title": "The plant strain"
+    },
+    "lifetime": {
+      "type": "number",
+      "title": "Epoch of when the plant was planted"
+    },
+    "state": {
+      "type": "string",
+      "title": "Plant current state",
+      "enum": ["seedling", "germination", "vegetative", "flowering"]
+    },
+    "cloned_from": {
+      "type": "number",
+      "title": "If the plant was cloned, it specifies the id of the plant it was cloned from"
+    }
+  }
+}

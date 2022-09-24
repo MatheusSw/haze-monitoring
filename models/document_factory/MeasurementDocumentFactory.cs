@@ -1,8 +1,8 @@
 ﻿using Amazon.DynamoDBv2.DocumentModel;
 
-namespace HazeMonitoring.models;
+namespace HazeMonitoring.models.document_factory;
 
-public static class MonitoringDocumentFactory
+public static class MeasurementDocumentFactory
 {
     public static Document Make(IMeasurement measurement)
     {

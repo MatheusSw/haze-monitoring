@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using HazeMonitoring.models.requests;
 
 namespace HazeMonitoring.models;
 
