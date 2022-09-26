@@ -95,7 +95,7 @@ functions:
                 cluster-id: true
             schemas:
               application/json: post-plant-create
-  clustersDispatcher:
+  clustersCreate:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
     handler: HazeMonitoring::HazeMonitoring.dispatchers.ClustersDispatcher::Create
@@ -109,6 +109,21 @@ functions:
           request:
             schemas:
               application/json: post-cluster-create
+  clustersDetails:
+    package:
+      artifact: bin/release/net6.0/hazeMonitoring.zip
+    handler: HazeMonitoring::HazeMonitoring.dispatchers.ClustersDispatcher::Details
+    environment:
+      hazeMonitoringTableName: ${self:custom.hazeMonitoringTableName}
+    url: true
+    events:
+      - http:
+          path: clusters/{cluster-id}
+          method: get
+          request:
+            parameters:
+              paths:
+                cluster-id: true
 resources:
   Resources:
     hazeMonitoringTable:

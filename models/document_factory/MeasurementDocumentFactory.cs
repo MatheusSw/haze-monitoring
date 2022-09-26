@@ -8,7 +8,7 @@ public static class MeasurementDocumentFactory
     {
         return new Document
         {
-            ["PK"] = ClusterDocumentFactory.GeneratePrimaryKeyFromClusterId(measurement.ClusterId),
+            ["PK"] = ClusterDocumentFactory.GeneratePartitionKeyFromClusterId(measurement.ClusterId),
             ["SK"] = $"measurement-{measurement.Type}#{measurement.Timestamp}",
             ["Measurement-reading"] = measurement.Reading
         };

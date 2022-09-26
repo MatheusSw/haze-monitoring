@@ -20,7 +20,8 @@ public class ClustersDispatcher
         {
             var clusterCreateRequest = JsonSerializer.Deserialize<ClusterCreateRequest>(gatewayRequest.Body);
 
-            context.Logger.LogInformation($"Received new cluster request - {JsonSerializer.Serialize(clusterCreateRequest)}");
+            context.Logger.LogInformation(
+                $"Received new cluster request - {JsonSerializer.Serialize(clusterCreateRequest)}");
             var cluster = ClusterFactory.Make(clusterCreateRequest);
             context.Logger.LogInformation($"Cluster model created - {JsonSerializer.Serialize(cluster)}");
 
@@ -30,6 +31,40 @@ public class ClustersDispatcher
             {
                 Body = JsonSerializer.Serialize(clusterCreateRequest),
                 StatusCode = (int) HttpStatusCode.Accepted
+            };
+        }
+        catch (Exception e)
+        {
+            context.Logger.LogError($"An error ocurred while processing the request - {e.Message} - {e.StackTrace}");
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int) HttpStatusCode.InternalServerError
+            };
+        }
+    }
+
+    public async Task<APIGatewayProxyResponse> Details(APIGatewayProxyRequest gatewayRequest, ILambdaContext context)
+    {
+        try
+        {
+            _ = gatewayRequest.PathParameters.TryGetValue("cluster-id", out var clusterId);
+
+            context.Logger.LogInformation($"Received cluster details request - Cluster id = {clusterId}");
+
+            var cluster = await ClustersHandler.Details(context.Logger, clusterId);
+
+            if (cluster == default)
+            {
+                return new APIGatewayProxyResponse
+                {
+                    StatusCode = (int) HttpStatusCode.NotFound
+                };
+            }
+
+            return new APIGatewayProxyResponse
+            {
+                Body = JsonSerializer.Serialize(cluster),
+                StatusCode = (int) HttpStatusCode.OK
             };
         }
         catch (Exception e)

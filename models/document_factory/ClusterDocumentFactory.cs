@@ -11,8 +11,8 @@ public static class ClusterDocumentFactory
         var clusterId = Guid.NewGuid().ToString();
         return new Document
         {
-            ["PK"] = GeneratePrimaryKeyFromClusterId(clusterId),
-            ["SK"] = GeneratePrimaryKeyFromClusterId(clusterId),
+            ["PK"] = GeneratePartitionKeyFromClusterId(clusterId),
+            ["SK"] = GeneratePartitionKeyFromClusterId(clusterId),
             ["Cluster-name"] = cluster.Name,
             ["Cluster-state"] = cluster.State,
             ["Cluster-location"] = cluster.Location,
@@ -21,7 +21,7 @@ public static class ClusterDocumentFactory
         };
     }
     
-    public static string GeneratePrimaryKeyFromClusterId(string clusterId)
+    public static string GeneratePartitionKeyFromClusterId(string clusterId)
     {
         return $"cluster-{clusterId}";
     }

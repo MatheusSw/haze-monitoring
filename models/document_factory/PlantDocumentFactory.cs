@@ -8,7 +8,7 @@ public static class PlantDocumentFactory
     {
         return new Document
         {
-            ["PK"] = ClusterDocumentFactory.GeneratePrimaryKeyFromClusterId(plant.ClusterId),
+            ["PK"] = ClusterDocumentFactory.GeneratePartitionKeyFromClusterId(plant.ClusterId),
             ["SK"] = $"plant-{plant.Id}",
             ["Plant-strain"] = plant.Strain,
             ["Plant-lifetime"] = plant.Lifetime,
