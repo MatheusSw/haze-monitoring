@@ -20,7 +20,9 @@ provider:
         post-cluster-create:
           name: PostClusterCreate
           schema: ${file(api_schema/post_cluster_create.json)}
-
+        put-cluster-update:
+          name: PutClusterUpdate
+          schema: ${file(api_schema/put_cluster_update.json)}
   region: sa-east-1
   iam:
     role:
@@ -124,6 +126,23 @@ functions:
             parameters:
               paths:
                 cluster-id: true
+  clustersUpdate:
+    package:
+      artifact: bin/release/net6.0/hazeMonitoring.zip
+    handler: HazeMonitoring::HazeMonitoring.dispatchers.ClustersDispatcher::Update
+    environment:
+      hazeMonitoringTableName: ${self:custom.hazeMonitoringTableName}
+    url: true
+    events:
+      - http:
+          path: clusters/{cluster-id}
+          method: put
+          request:
+            parameters:
+              paths:
+                cluster-id: true
+            schemas:
+              application/json: put-cluster-update
 resources:
   Resources:
     hazeMonitoringTable:

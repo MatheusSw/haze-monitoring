@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Amazon.Lambda.Core;
 using HazeMonitoring.models;
 using HazeMonitoring.models.document_factory;
 using HazeMonitoring.models.dynamodb;
+using HazeMonitoring.models.requests;
 
 namespace HazeMonitoring.handlers;
 
@@ -50,7 +52,7 @@ public static class ClustersHandler
             var clusterPrimaryKey = ClusterDocumentFactory.GeneratePartitionKeyFromClusterId(clusterId);
             var cluster = await
                 dynamoDbContext.LoadAsync<ClusterDbModel>(clusterPrimaryKey, clusterPrimaryKey, config);
-            
+
             if (cluster is null)
             {
                 logger.LogInformation($"Cluster not found - id {clusterId}");
@@ -66,7 +68,43 @@ public static class ClustersHandler
                 $"There has been an error while trying to search details for the cluster - {clusterId}");
             throw;
         }
+    }
 
-        await Task.CompletedTask;
+    public static async Task<ClusterDbModel> Update(ILambdaLogger logger, string clusterId,
+        ClusterUpdateRequest clusterUpdateRequest)
+    {
+        try
+        {
+            var dynamoDbContext = new DynamoDBContext(DynamoDbClient);
+            var config = new DynamoDBOperationConfig
+            {
+                OverrideTableName = MonitoringTableName
+            };
+
+            //TODO Instead of returning, save the new cluster
+            var cluster = await Details(logger, clusterId);
+            if (cluster is null)
+            {
+                return null;
+            }
+
+            cluster.Location = clusterUpdateRequest.Location;
+            cluster.Name = clusterUpdateRequest.Name;
+            cluster.State = clusterUpdateRequest.State;
+            cluster.UpdatedAt = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+
+            logger.LogInformation(
+                $"Updating cluster from {JsonSerializer.Serialize(cluster)} to {JsonSerializer.Serialize(clusterUpdateRequest)}");
+            
+            await dynamoDbContext.SaveAsync(cluster, config);
+            
+            return cluster;
+        }
+        catch (Exception)
+        {
+            logger.LogError(
+                $"There has been an error while trying to search details for the cluster - {clusterId}");
+            throw;
+        }
     }
 }

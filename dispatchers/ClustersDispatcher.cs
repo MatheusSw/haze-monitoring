@@ -76,4 +76,41 @@ public class ClustersDispatcher
             };
         }
     }
+    
+    public async Task<APIGatewayProxyResponse> Update(APIGatewayProxyRequest gatewayRequest, ILambdaContext context)
+    {
+        try
+        {
+            _ = gatewayRequest.PathParameters.TryGetValue("cluster-id", out var clusterId);
+
+            context.Logger.LogInformation($"Received cluster update request - Cluster id = {clusterId}");
+
+            var clusterUpdateRequest = JsonSerializer.Deserialize<ClusterUpdateRequest>(gatewayRequest.Body);
+
+            //TODO Use Cluster model instead of ClusterUpdateRequest
+            var cluster = await ClustersHandler.Update(context.Logger, clusterId, clusterUpdateRequest);
+
+            if (cluster == default)
+            {
+                return new APIGatewayProxyResponse
+                {
+                    StatusCode = (int) HttpStatusCode.NotFound
+                };
+            }
+
+            return new APIGatewayProxyResponse
+            {
+                Body = JsonSerializer.Serialize(cluster),
+                StatusCode = (int) HttpStatusCode.OK
+            };
+        }
+        catch (Exception e)
+        {
+            context.Logger.LogError($"An error ocurred while processing the request - {e.Message} - {e.StackTrace}");
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int) HttpStatusCode.InternalServerError
+            };
+        }
+    }
 }
