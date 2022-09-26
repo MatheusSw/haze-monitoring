@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -70,6 +71,39 @@ public static class ClustersHandler
         }
     }
 
+    public static async Task<IEnumerable<ClusterDbModel>> Index(ILambdaLogger logger)
+    {
+        try
+        {
+            var dynamoDbContext = new DynamoDBContext(DynamoDbClient);
+            var config = new DynamoDBOperationConfig
+            {
+                OverrideTableName = MonitoringTableName
+            };
+
+            var clustersSearch = dynamoDbContext.ScanAsync<ClusterDbModel>(new List<ScanCondition>
+            {
+                new("HashKey", ScanOperator.BeginsWith, "cluster"),
+                new("SortKey", ScanOperator.BeginsWith, "cluster")
+            }, config);
+
+            var clusters = new List<ClusterDbModel>();
+            do
+            {
+                var clustersSet = await clustersSearch.GetNextSetAsync();
+                clusters.AddRange(clustersSet);
+            } while (!clustersSearch.IsDone);
+
+            logger.LogInformation($"Clusters index retrieved - {JsonSerializer.Serialize(clusters)}");
+            return clusters;
+        }
+        catch (Exception)
+        {
+            logger.LogError("There has been an error while trying to scan all clusters");
+            throw;
+        }
+    }
+
     public static async Task<ClusterDbModel> Update(ILambdaLogger logger, string clusterId,
         ClusterUpdateRequest clusterUpdateRequest)
     {
@@ -95,9 +129,9 @@ public static class ClustersHandler
 
             logger.LogInformation(
                 $"Updating cluster from {JsonSerializer.Serialize(cluster)} to {JsonSerializer.Serialize(clusterUpdateRequest)}");
-            
+
             await dynamoDbContext.SaveAsync(cluster, config);
-            
+
             return cluster;
         }
         catch (Exception)

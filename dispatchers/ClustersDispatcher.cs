@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -64,6 +65,38 @@ public class ClustersDispatcher
             return new APIGatewayProxyResponse
             {
                 Body = JsonSerializer.Serialize(cluster),
+                StatusCode = (int) HttpStatusCode.OK
+            };
+        }
+        catch (Exception e)
+        {
+            context.Logger.LogError($"An error ocurred while processing the request - {e.Message} - {e.StackTrace}");
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int) HttpStatusCode.InternalServerError
+            };
+        }
+    }
+    
+    public async Task<APIGatewayProxyResponse> Index(APIGatewayProxyRequest gatewayRequest, ILambdaContext context)
+    {
+        try
+        {
+            context.Logger.LogInformation("Received cluster index request");
+
+            var cluster = await ClustersHandler.Index(context.Logger);
+
+            if (cluster == default || !cluster.Any())
+            {
+                return new APIGatewayProxyResponse
+                {
+                    StatusCode = (int) HttpStatusCode.NotFound
+                };
+            }
+
+            return new APIGatewayProxyResponse
+            {
+                Body = JsonSerializer.Serialize(cluster.ToList()),
                 StatusCode = (int) HttpStatusCode.OK
             };
         }
