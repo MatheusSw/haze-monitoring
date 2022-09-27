@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
+using HazeMonitoring.handlers;
 using HazeMonitoring.models;
 using HazeMonitoring.models.factory;
 using HazeMonitoring.models.requests;
@@ -44,6 +46,39 @@ public class MeasurementDispatcher
             {
                 Body = JsonSerializer.Serialize(measurementCreateRequest),
                 StatusCode = (int) HttpStatusCode.Accepted
+            };
+        }
+        catch (Exception e)
+        {
+            context.Logger.LogError($"An error ocurred while processing the request - {e.Message} - {e.StackTrace}");
+            return new APIGatewayProxyResponse
+            {
+                StatusCode = (int) HttpStatusCode.InternalServerError
+            };
+        }
+    }
+    
+    //todo implement correlation id logging for easier tracing
+    public async Task<APIGatewayProxyResponse> Index(APIGatewayProxyRequest gatewayRequest, ILambdaContext context)
+    {
+        try
+        {
+            _ = gatewayRequest.PathParameters.TryGetValue("cluster-id", out var clusterId);
+
+            var measurements = await MeasurementsHandler.Index(clusterId, context.Logger);
+            
+            if (measurements == default || !measurements.Any())
+            {
+                return new APIGatewayProxyResponse
+                {
+                    StatusCode = (int) HttpStatusCode.NotFound
+                };
+            }
+
+            return new APIGatewayProxyResponse
+            {
+                Body = JsonSerializer.Serialize(measurements),
+                StatusCode = (int) HttpStatusCode.OK
             };
         }
         catch (Exception e)

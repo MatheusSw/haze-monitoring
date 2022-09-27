@@ -53,7 +53,7 @@ package:
     - 'package.json'
     - 'package-lock.json'
 functions:
-  measurementsDispatcher:
+  measurementsCreate:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
     handler: HazeMonitoring::HazeMonitoring.dispatchers.MeasurementDispatcher::Create
@@ -63,6 +63,7 @@ functions:
     events:
       - http:
           path: clusters/{cluster-id}/measurements
+          cors: true
           method: post
           request:
             parameters:
@@ -70,6 +71,22 @@ functions:
                 cluster-id: true
             schemas:
               application/json: post-measurements-create
+  measurementsIndex:
+    package:
+      artifact: bin/release/net6.0/hazeMonitoring.zip
+    handler: HazeMonitoring::HazeMonitoring.dispatchers.MeasurementDispatcher::Index
+    environment:
+      hazeMonitoringTableName: ${self:custom.hazeMonitoringTableName}
+    url: true
+    events:
+      - http:
+          path: clusters/{cluster-id}/measurements
+          cors: true
+          method: get
+          request:
+            parameters:
+              paths:
+                cluster-id: true
   measurementsHandler:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
@@ -91,6 +108,8 @@ functions:
       - http:
           path: clusters/{cluster-id}/plants
           method: post
+          cors:
+            origin: 'http://localhost:3000'
           request:
             parameters:
               paths:
@@ -107,6 +126,8 @@ functions:
     events:
       - http:
           path: clusters
+          cors:
+            origin: 'http://localhost:3000'
           method: post
           request:
             schemas:
@@ -122,6 +143,7 @@ functions:
       - http:
           path: clusters
           method: get
+          cors: true
   clustersDetails:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
@@ -137,6 +159,8 @@ functions:
             parameters:
               paths:
                 cluster-id: true
+          cors:
+            origin: 'http://localhost:3000'
   clustersUpdate:
     package:
       artifact: bin/release/net6.0/hazeMonitoring.zip
@@ -147,6 +171,8 @@ functions:
     events:
       - http:
           path: clusters/{cluster-id}
+          cors:
+            origin: 'http://localhost:3000'
           method: put
           request:
             parameters:
