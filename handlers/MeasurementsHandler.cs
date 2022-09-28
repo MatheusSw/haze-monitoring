@@ -59,7 +59,8 @@ public class MeasurementsHandler
             var dynamoDbContext = new DynamoDBContext(DynamoDbClient);
             var config = new DynamoDBOperationConfig
             {
-                OverrideTableName = MonitoringTableName
+                OverrideTableName = MonitoringTableName,
+                BackwardQuery = true
             };
 
             //TODO FIX THIS!!!!!!!!!!!! DynamoDb remodel is necessary
