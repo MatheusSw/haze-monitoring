@@ -33,6 +33,16 @@ public class MeasurementDispatcher
 
             var measurement = MeasurementFactory.Make(clusterId, measurementCreateRequest);
             
+            if (await ClustersHandler.Details(context.Logger, measurement.ClusterId) is null)
+            {
+                context.Logger.LogWarning($"Insertion of measurement for non existing cluster was blocked - {JsonSerializer.Serialize(measurement)}");
+                return new APIGatewayProxyResponse
+                {
+                    Body = JsonSerializer.Serialize(measurementCreateRequest),
+                    StatusCode = (int) HttpStatusCode.NotFound
+                };
+            }
+
             context.Logger.LogInformation($"Publishing request to SNS - {JsonSerializer.Serialize(measurement)}");
             var notificationRequest = new PublishRequest
             {

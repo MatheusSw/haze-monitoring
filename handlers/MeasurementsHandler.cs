@@ -35,7 +35,12 @@ public class MeasurementsHandler
             //TODO check if the cluster actually exists before inserting measurement
             context.Logger.LogInformation($"Processing a new measurement - {JsonSerializer.Serialize(record.Sns)}");
             var measurement = JsonSerializer.Deserialize<Measurement>(record.Sns.Message);
-
+            if (measurement is null)
+            {
+                context.Logger.LogError($"Received empty measurement - Sns record - {JsonSerializer.Serialize(record.Sns)}");
+                return;
+            }
+            
             var table = Table.LoadTable(DynamoDbClient, MonitoringTableName);
 
             var monitoringDocument = MeasurementDocumentFactory.Make(measurement);
