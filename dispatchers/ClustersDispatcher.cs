@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using HazeMonitoring.handlers;
-using HazeMonitoring.models;
 using HazeMonitoring.models.factory;
 using HazeMonitoring.models.requests;
 

@@ -9,9 +9,9 @@ using Amazon.Lambda.Core;
 using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
 using HazeMonitoring.handlers;
-using HazeMonitoring.models;
 using HazeMonitoring.models.factory;
 using HazeMonitoring.models.requests;
+using HazeMonitoring.models.responses;
 
 // ReSharper disable PossibleInvalidOperationException
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
@@ -67,8 +67,9 @@ public class MeasurementDispatcher
             _ = gatewayRequest.PathParameters.TryGetValue("cluster-id", out var clusterId);
 
             var measurements = await MeasurementsHandler.Index(clusterId, context.Logger);
+            var measurementsResponse = measurements.Select(m => new MeasurementsIndexResponse(m)).ToList();
             
-            if (measurements == default || !measurements.Any())
+            if (!measurementsResponse.Any())
             {
                 return new APIGatewayProxyResponse
                 {
@@ -78,7 +79,7 @@ public class MeasurementDispatcher
 
             return new APIGatewayProxyResponse
             {
-                Body = JsonSerializer.Serialize(measurements),
+                Body = JsonSerializer.Serialize(measurementsResponse),
                 StatusCode = (int) HttpStatusCode.OK,
                 Headers = new Dictionary<string, string>
                 {
