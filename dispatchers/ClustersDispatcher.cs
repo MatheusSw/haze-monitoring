@@ -9,6 +9,7 @@ using Amazon.Lambda.Core;
 using HazeMonitoring.handlers;
 using HazeMonitoring.models.factory;
 using HazeMonitoring.models.requests;
+using HazeMonitoring.models.responses;
 
 namespace HazeMonitoring.dispatchers;
 
@@ -84,9 +85,10 @@ public class ClustersDispatcher
         {
             context.Logger.LogInformation("Received cluster index request");
 
-            var cluster = await ClustersHandler.Index(context.Logger);
-
-            if (cluster == default || !cluster.Any())
+            var clusters = await ClustersHandler.Index(context.Logger);
+            var clustersResponse = clusters.Select(c => new ClusterIndexResponse(c)).ToList();
+            
+            if (!clustersResponse.Any())
             {
                 return new APIGatewayProxyResponse
                 {
@@ -96,7 +98,7 @@ public class ClustersDispatcher
 
             return new APIGatewayProxyResponse
             {
-                Body = JsonSerializer.Serialize(cluster.ToList()),
+                Body = JsonSerializer.Serialize(clustersResponse.ToList()),
                 StatusCode = (int) HttpStatusCode.OK,
                 Headers = new Dictionary<string, string>
                 {
