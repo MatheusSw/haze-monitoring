@@ -53,19 +53,16 @@ public static class ClustersHandler
             var cluster = await
                 dynamoDbContext.LoadAsync<ClusterDbModel>(clusterPrimaryKey, clusterPrimaryKey, config);
 
-            if (cluster is null)
-            {
-                logger.LogInformation($"Cluster not found - id {clusterId}");
-            }
-
-            logger.LogInformation($"Cluster found - {JsonSerializer.Serialize(cluster)}");
+            logger.LogInformation(cluster is null
+                ? $"Cluster not found - id {clusterId}"
+                : $"Cluster found - {JsonSerializer.Serialize(cluster)}");
 
             return cluster;
         }
-        catch (Exception)
+        catch (Exception e)
         {
             logger.LogError(
-                $"There has been an error while trying to search details for the cluster - {clusterId}");
+                $"There has been an error while trying to search details for the cluster - {clusterId} - {e.Message} - {e.StackTrace}");
             throw;
         }
     }

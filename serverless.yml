@@ -59,6 +59,7 @@ functions:
     handler: HazeMonitoring::HazeMonitoring.dispatchers.MeasurementDispatcher::Create
     environment:
       hazeMeasurementsTopicArn: !Ref hazeMeasurementsTopic
+      hazeMonitoringTableName: ${self:custom.hazeMonitoringTableName}
     url: true
     events:
       - http:

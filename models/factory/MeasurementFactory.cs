@@ -8,6 +8,7 @@ public static class MeasurementFactory
 {
     public static IMeasurement Make(string clusterId, MeasurementCreateRequest measurementCreateRequest)
     {
+        //TODO use the actual request timestamp
         return new Measurement
         {
             ClusterId = clusterId,
