@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -78,7 +79,12 @@ public class MeasurementDispatcher
             return new APIGatewayProxyResponse
             {
                 Body = JsonSerializer.Serialize(measurements),
-                StatusCode = (int) HttpStatusCode.OK
+                StatusCode = (int) HttpStatusCode.OK,
+                Headers = new Dictionary<string, string>
+                {
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
+                }
             };
         }
         catch (Exception e)
