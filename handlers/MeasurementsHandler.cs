@@ -102,7 +102,6 @@ public class MeasurementsHandler
                 measurements.AddRange(measurementsSet);
             } while (!measurementsTemperatureSearch.IsDone);
 
-            logger.LogInformation($"Measurements index retrieved - {JsonSerializer.Serialize(measurements)}");
             return measurements;
         }
         catch (Exception)

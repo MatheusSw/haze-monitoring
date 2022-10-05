@@ -77,6 +77,8 @@ public class MeasurementDispatcher
             _ = gatewayRequest.PathParameters.TryGetValue("cluster-id", out var clusterId);
 
             var measurements = await MeasurementsHandler.Index(clusterId, context.Logger);
+            context.Logger.LogInformation($"Measurements retrieved from database - {JsonSerializer.Serialize(measurements)}");
+            
             var measurementsResponse = measurements.Select(m => new MeasurementsIndexResponse(m)).ToList();
             
             if (!measurementsResponse.Any())

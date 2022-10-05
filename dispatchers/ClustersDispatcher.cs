@@ -24,6 +24,16 @@ public class ClustersDispatcher
 
             context.Logger.LogInformation(
                 $"Received new cluster request - {JsonSerializer.Serialize(clusterCreateRequest)}");
+            
+            if (string.IsNullOrEmpty(clusterCreateRequest.Location) || string.IsNullOrEmpty(clusterCreateRequest.Name))
+            {
+                context.Logger.LogInformation("Cluster create request did not contain all necessary data");
+                return new APIGatewayProxyResponse
+                {
+                    StatusCode = (int) HttpStatusCode.BadRequest
+                }; 
+            }
+            
             var cluster = ClusterFactory.Make(clusterCreateRequest);
             context.Logger.LogInformation($"Cluster model created - {JsonSerializer.Serialize(cluster)}");
 
@@ -32,7 +42,12 @@ public class ClustersDispatcher
             return new APIGatewayProxyResponse
             {
                 Body = JsonSerializer.Serialize(clusterCreateRequest),
-                StatusCode = (int) HttpStatusCode.Accepted
+                StatusCode = (int) HttpStatusCode.Accepted,
+                Headers = new Dictionary<string, string>
+                {
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
+                }
             };
         }
         catch (Exception e)
