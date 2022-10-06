@@ -31,7 +31,7 @@ public class ClustersDispatcher
                 return new APIGatewayProxyResponse
                 {
                     StatusCode = (int) HttpStatusCode.BadRequest
-                }; 
+                };
             }
             
             var cluster = ClusterFactory.Make(clusterCreateRequest);

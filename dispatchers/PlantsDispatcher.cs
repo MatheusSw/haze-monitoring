@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -31,7 +32,12 @@ public class PlantsDispatcher
             return new APIGatewayProxyResponse
             {
                 Body = JsonSerializer.Serialize(plantCreateRequest),
-                StatusCode = (int) HttpStatusCode.Accepted
+                StatusCode = (int) HttpStatusCode.Accepted,
+                Headers = new Dictionary<string, string>
+                {
+                    {"Access-Control-Allow-Origin", "*"},
+                    {"Access-Control-Allow-Credentials", "true"}
+                }
             };
         }
         catch (Exception e)
