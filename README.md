@@ -1,3 +1,6 @@
+## Architecture Design
+![Architecture design](https://i.imgur.com/x69ucDY.png)
+
 # serverlessDotNetStarter ![.NET Core](https://github.com/pharindoko/serverlessDotNetStarter/workflows/.NET%20Core/badge.svg?branch=master)
 
 Starter template for serverless framework with following scope:
