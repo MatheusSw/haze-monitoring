@@ -2,7 +2,7 @@
 ![Architecture design](https://i.imgur.com/WI3SYAE.png)
 
 ### Considerations
-- The use of SNS instead of just a lambda function to create the measurements was made to ensure the lowest response latency time possible, as HTTP calls on ESP32 are blocking and when under heavy stress Api gateway would be able to respond faster.
+- The use of SNS instead of just a lambda function to create the measurements was made to ensure the lowest response latency time possible, as HTTP calls on ESP32 are blocking and when under heavy stress Api gateway would be able to respond faster, while also decoupling the ingest process.
 - 2 minutes for each measurements call is considerably low, as humidity and temperature don't tend to change so fast, so in a normal scenario, we could be expecting 1 call/60 minutes or higher.
 
 ### Back-of-the-envelope Estimation
