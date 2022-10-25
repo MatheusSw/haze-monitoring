@@ -1,5 +1,22 @@
 ## Architecture Design
-![Architecture design](https://i.imgur.com/x69ucDY.png)
+![Architecture design](https://i.imgur.com/WI3SYAE.png)
+
+### Considerations
+- The use of SNS instead of just a lambda function to create the measurements was made to ensure the lowest response latency time possible, as HTTP calls on ESP32 are blocking and when under heavy stress Api gateway would be able to respond faster.
+- 2 minutes for each measurements call is considerably low, as humidity and temperature don't tend to change so fast, so in a normal scenario, we could be expecting 1 call/60 minutes or higher.
+
+### Back-of-the-envelope Estimation
+**Assumptions**
+- 20k daily active microcontrollers.
+- 100% of the microcontrollers are sending new measurements every 60 minutes.
+- Data is stored for 3 years.
+
+**Query per second (QPS) estimate**\
+**QPS** = 20.000 microcontrollers * 24 measurements / 24 hours / 3600 seconds = **~6/Qps**\
+Peek QPS = 2 * QPS = **~12Qps**
+
+**Daily measurements storage** = 20.000 microcontrollers * 24 * 83B = 40.32MB/day\
+**3-years-storage** = 40.32MB * 365 * 3 = 44.15 gigabytes
 
 # serverlessDotNetStarter ![.NET Core](https://github.com/pharindoko/serverlessDotNetStarter/workflows/.NET%20Core/badge.svg?branch=master)
 
