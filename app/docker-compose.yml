@@ -1,24 +1,63 @@
 ﻿services:
-  hazeapi:
-    image: hazeapi
-    build:
-      context: .
-      dockerfile: HazeApi/Dockerfile
+  haze:
+    image: "hazeapi"
+    environment:
+      - DD_API_KEY=dd_api_key
+    build: .
     ports:
       - "8080:8080"
+    secrets:
+      - dd_api_key
   prometheus:
     image: "prom/prometheus"
     ports:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-  grafana:
-    image: "grafana/grafana-enterprise"
-    ports:
-      - "3000:3000"
+      - prometheus_data:/prometheus'
+    labels:
+      com.datadoghq.ad.check_names: '["openmetrics"]'
+      com.datadoghq.ad.init_configs: '[{}]'
+      com.datadoghq.ad.instances: |
+        [
+          {
+            "openmetrics_endpoint": "http://%%host%%:%%port%%/metrics",
+            "namespace": "Haze",
+            "metrics": [
+              ".+"
+            ]
+          }
+        ]    
+  datadog-agent:
+    image: gcr.io/datadoghq/agent:7
+    environment:
+      - DD_API_KEY=56dfc6438842c7ab40c43b0ca1741490
+      - DD_SITE=us3.datadoghq.com
+      - DD_ENV=Dev
+      - DD_TAGS=Environment:Local
     volumes:
-      - grafana_data:/var/lib/grafana
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    secrets:
+      - dd_api_key
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    labels:
+      com.datadoghq.ad.check_names: '["postgres"]'
+      com.datadoghq.ad.init_configs: '[{}]'
+      com.datadoghq.ad.instances: '[{"host":"%%host%%", "port":5432,"username":"datadog2","password":"datadog"}]' #only locally :)
+    volumes:
+      - ~/apps/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=Haze
+      - POSTGRES_PASSWORD=admin #only locally :)
+secrets:
+  dd_api_key:
+    file: Secrets/dd_api_key.txt
 volumes:
   prometheus_data:
     driver: local

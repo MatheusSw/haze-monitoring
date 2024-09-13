@@ -2,3 +2,6 @@
 
 **/appsettings.Development.json
 **/launchSettings.json
+
+Secrets/
+docker-compose.yml
