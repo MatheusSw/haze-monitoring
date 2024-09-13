@@ -16,6 +16,19 @@ public class ClusterController(IClusterCommandHandler clusterCommandHandler) : C
         return Empty;
     }
 
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Cluster?>> Show(string id)
+    {
+        var command = new FetchClusterCommand
+        {
+            Id = id
+        };
+
+        var result = await clusterCommandHandler.Handle(command);
+
+        return result;
+    }
+
     [HttpPost]
     public ActionResult<Cluster?> Store(ClusterStoreRequest request)
     {

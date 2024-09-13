@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Haze.Infra.Models.Clusters;
 
-[Table("clusters")]
+[Table("Clusters")]
 public class Cluster
 {
-    public required string Id { get; set; }
-    [Column("name")] public required string Name { get; set; }
-    [Column("location")] public string? Location { get; set; }
+    [MaxLength(255)] [Column("id")] public required string Id { get; set; }
+    [MaxLength(255)] [Column("name")] public required string Name { get; set; }
+    [MaxLength(255)] [Column("location")] public string? Location { get; set; }
 }

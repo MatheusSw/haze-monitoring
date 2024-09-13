@@ -11,9 +11,7 @@ public class ClustersRepository(HazeContext hazeContext) : IClustersRepository
     {
         Log.Logger.Information("Initiating fetch by cluster id {id}", id); //TODO: Level=Debug
 
-        await using var db = hazeContext;
-
-        var result = await db.Clusters.FindAsync(id);
+        var result = await hazeContext.Clusters.FindAsync(id);
 
         Log.Logger
             .ForContext("Cluster", result, result is not null)
@@ -26,9 +24,7 @@ public class ClustersRepository(HazeContext hazeContext) : IClustersRepository
     {
         Log.Logger.Information("Initiating all fetch"); //TODO: Level=Debug
 
-        await using var db = hazeContext;
-
-        var result = await db.Clusters.ToListAsync();
+        var result = await hazeContext.Clusters.ToListAsync();
 
         Log.Logger
             .ForContext("Clusters", result, true)
@@ -42,8 +38,6 @@ public class ClustersRepository(HazeContext hazeContext) : IClustersRepository
         Log.Logger
             .ForContext("Request", cluster, true)
             .Information("Initiating cluster update request");
-
-        await using var db = hazeContext;
 
         var entity = await Fetch(cluster.Id);
         if (entity is null)
@@ -59,11 +53,11 @@ public class ClustersRepository(HazeContext hazeContext) : IClustersRepository
             .ForContext("Existing cluster", entity, true)
             .Information("Existing cluster to be updated found");
 
-        db.Entry(entity).CurrentValues.SetValues(cluster);
+        hazeContext.Entry(entity).CurrentValues.SetValues(cluster);
 
         try
         {
-            await db.SaveChangesAsync();
+            await hazeContext.SaveChangesAsync();
 
             Log.Logger
                 .Information("Cluster updated successfully");
@@ -86,10 +80,8 @@ public class ClustersRepository(HazeContext hazeContext) : IClustersRepository
 
         try
         {
-            using var db = hazeContext;
-
-            var result = db.Clusters.Add(cluster);
-            db.SaveChanges();
+            var result = hazeContext.Clusters.Add(cluster);
+            hazeContext.SaveChanges();
 
             Log.Logger
                 .ForContext("Result", result.Entity, true)

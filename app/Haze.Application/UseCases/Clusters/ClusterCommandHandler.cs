@@ -9,14 +9,14 @@ namespace Haze.Application.UseCases.Clusters;
 public class ClusterCommandHandler(IClustersRepository clustersRepository) : IClusterCommandHandler
 {
     //TODO: Should return an application/domain model
-    public Cluster? Handle(CreateClusterCommand createClusterCommand)
+    public Cluster? Handle(CreateClusterCommand command)
     {
-        LogContext.PushProperty("Command", createClusterCommand, true);
+        LogContext.PushProperty("Command", command, true);
 
         var cluster = new Cluster
         {
-            Name = createClusterCommand.Name,
-            Location = createClusterCommand.Location,
+            Name = command.Name,
+            Location = command.Location,
             Id = Guid.NewGuid().ToString()
         };
 
@@ -39,15 +39,15 @@ public class ClusterCommandHandler(IClustersRepository clustersRepository) : ICl
         return result;
     }
 
-    public async Task<Cluster?> Handle(UpdateClusterCommand updateClusterCommand)
+    public async Task<Cluster?> Handle(UpdateClusterCommand command)
     {
-        LogContext.PushProperty("Command", updateClusterCommand, true);
+        LogContext.PushProperty("Command", command, true);
         
         var cluster = new Cluster
         {
-            Name = updateClusterCommand.Name,
-            Id = updateClusterCommand.Id,
-            Location = updateClusterCommand.Location
+            Name = command.Name,
+            Id = command.Id,
+            Location = command.Location
         };
 
         LogContext.PushProperty("Cluster request", cluster, true);
@@ -65,6 +65,25 @@ public class ClusterCommandHandler(IClustersRepository clustersRepository) : ICl
         Log.Logger
             .ForContext("Created Cluster", result, true)
             .Information("Cluster was successfully updated");
+
+        return result;
+    }
+
+    public async Task<Cluster?> Handle(FetchClusterCommand command)
+    {
+        LogContext.PushProperty("Command", command, true);
+        
+        var result = await clustersRepository.Fetch(command.Id);
+        
+        if (result is null)
+        {
+            Log.Logger.Information("No clusters were found for the given id");
+
+            return default;
+        }
+        Log.Logger
+            .ForContext("Cluster", result, true)
+            .Information("Cluster was successfully fetched");
 
         return result;
     }

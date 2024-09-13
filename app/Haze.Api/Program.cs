@@ -30,7 +30,7 @@ builder.Services.AddDbContext<HazeContext>(
 
 builder.Services.AddSerilog();
 
-builder.Services.AddSingleton<IClusterCommandHandler, ClusterCommandHandler>();
+builder.Services.AddScoped<IClusterCommandHandler, ClusterCommandHandler>();
 
 builder.Services.AddScoped<IClustersRepository, ClustersRepository>();
 
