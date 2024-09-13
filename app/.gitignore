@@ -1,0 +1,4 @@
+﻿.idea/
+
+**/appsettings.Development.json
+**/launchSettings.json
