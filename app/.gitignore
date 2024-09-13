@@ -1,6 +1,7 @@
 ﻿.idea/
 
 **/appsettings.Development.json
+**/appsettings.Local.json
 **/launchSettings.json
 
 Secrets/

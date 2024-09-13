@@ -2,6 +2,7 @@
   haze:
     image: "hazeapi"
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
       - DD_API_KEY=dd_api_key
     build: .
     ports:
